@@ -23,15 +23,5 @@ object Main
         genPosition(variant, moves, positions)
       case Args.Perft(file, depth) => ???
 
-  private def genPosition(
-      variant: Variant,
-      moves: Int,
-      positions: Int
-  ): IO[Unit] =
-    IO.println(
-      PositionGenerator.generate(
-        variant,
-        moves,
-        positions
-      ).mkString("\n")
-    )
+  private def genPosition(variant: Variant, moves: Int, positions: Int): IO[Unit] =
+    IO.println(PositionGenerator.generate(variant, moves, positions).mkString("\n"))
