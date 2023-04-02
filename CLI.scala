@@ -7,7 +7,7 @@ import chess.variant.*
 object CLI:
 
   enum Args:
-    case Gen(variant: Variant, moves: Int, positions: Int)
+    case Gen(variant: Variant, moves: Int, positions: Int) // todo --output option
     case Perft(file: String, depth: Int)
 
   def parse: Opts[Args] = Opts.subcommand(genCommand)
