@@ -9,7 +9,7 @@ import fs2.data.csv.*
 import chess.variant.*
 
 import CLI.Args
-import Domain.{ Position, PositionGenConfig }
+import Domain.*
 import PositionGenerator.generate
 
 object Main
@@ -37,20 +37,22 @@ object Main
       .write(output)
 
   private def perft(depth: Int): IO[Unit] =
-    // Domain.supportedVariants.traverse_(perft(_, depth))
-    perft(Atomic, depth)
+    Domain.supportedVariants.traverse_(perft(_, depth))
+    // perft(Atomic, depth)
 
   private def perft(variant: Variant, depth: Int): IO[Unit] =
-    Domain.configs.traverse_(perft(variant, depth, _))
-
-  private def perft(variant: Variant, depth: Int, config: PositionGenConfig): IO[Unit] =
     Stream
-      .emits(generate(variant, config))
-      .map(_.position)
+      .emits(Domain.configs)
+      .flatMap(perft(variant, depth, _))
       .zipWithIndex
       .evalMap((position, id) => PerftGenerator.gen(position, depth, id.toString))
       .map(_.toPerftString)
       .write(s"${variant.key}.perft")
+
+  private def perft(variant: Variant, depth: Int, config: PositionGenConfig): Stream[IO, Position] =
+    Stream
+      .emits(generate(variant, config))
+      .map(_.position)
 
   extension (lines: Stream[IO, String])
     def write(output: String): IO[Unit] =
