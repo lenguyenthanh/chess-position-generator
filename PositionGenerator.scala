@@ -5,12 +5,12 @@ import chess.MoveOrDrop.*
 import cats.data.State
 
 object PositionGenerator:
-  import Domain.Position
+  import Domain.{ Position, PositionGenConfig }
 
-  def generate(variant: Variant, moves: Int, positions: Int): List[Result] =
+  def generate(variant: Variant, config: PositionGenConfig): List[Result] =
     val situation = Situation(variant)
-    (1 to positions)
-      .map(_ => situation.gen(moves, Nil))
+    (1 to config.positions)
+      .map(_ => situation.gen(config.moves, Nil))
       .map((sit, moves) => Result(Position(variant, Fen.write(sit)), moves.map(_.toUci.uci)))
       .toList
 

@@ -11,6 +11,19 @@ object Domain:
   given CellDecoder[Variant] = CellDecoder(validate(_).leftMap(DecoderError(_)))
   given RowDecoder[Position] = deriveRowDecoder
 
+  val configs = List(
+    PositionGenConfig(9, 8),
+    PositionGenConfig(16, 8),
+    PositionGenConfig(20, 10),
+    PositionGenConfig(25, 10),
+    PositionGenConfig(31, 10),
+    PositionGenConfig(36, 10),
+    PositionGenConfig(42, 10),
+    PositionGenConfig(53, 10),
+    PositionGenConfig(58, 4),
+    PositionGenConfig(67, 10)
+  )
+  case class PositionGenConfig(moves: Int, positions: Int)
   case class Position(variant: Variant, epd: EpdFen):
     def csv: String = s"${variant.key},$epd"
 
@@ -31,8 +44,13 @@ object Domain:
           s"Unknown or unsupported variant: $variant.\nSupported variants: crazyhouse, atomic, horde, racingkings, antichess, threecheck, kingofthehill"
         )
 
-
   case class Perft(id: String, epd: EpdFen, cases: List[TestCase]):
-    def max = cases.last.nodes
+    def toPerftString: String =
+      s"""
+         |id $id
+         |epd $epd
+         |${cases.map(_.toPerftString).mkString("\n")}
+         |""".stripMargin
 
-  case class TestCase(depth: Int, nodes: Long)
+  case class TestCase(depth: Int, nodes: Long):
+    def toPerftString: String = s"$depth $nodes"
