@@ -6,15 +6,15 @@ import cats.data.State
 
 object PositionGenerator:
 
-  case class Result(val fen: EpdFen, val moves: List[String]) {
-    override def toString: String = s"$fen,${moves.mkString(" ")}"
+  case class Result(fen: EpdFen, moves: List[String], variant: Variant) {
+    override def toString: String = s"${variant.key}, $fen,${moves.mkString(" ")}"
   }
 
   def generate(variant: Variant, moves: Int, positions: Int): List[Result] =
     val situation = Situation(variant)
     (1 to positions)
       .map(_ => situation.gen(moves, Nil))
-      .map((sit, moves) => Result(Fen.write(sit), moves.map(_.toUci.uci)))
+      .map((sit, moves) => Result(Fen.write(sit), moves.map(_.toUci.uci), variant))
       .toList
 
   val nextMove: State[Situation, Option[Move]] = State(sit =>
