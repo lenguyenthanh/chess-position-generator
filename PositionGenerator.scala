@@ -5,16 +5,13 @@ import chess.MoveOrDrop.*
 import cats.data.State
 
 object PositionGenerator:
-
-  case class Result(fen: EpdFen, moves: List[String], variant: Variant) {
-    override def toString: String = s"${variant.key}, $fen,${moves.mkString(" ")}"
-  }
+  import Domain.Position
 
   def generate(variant: Variant, moves: Int, positions: Int): List[Result] =
     val situation = Situation(variant)
     (1 to positions)
       .map(_ => situation.gen(moves, Nil))
-      .map((sit, moves) => Result(Fen.write(sit), moves.map(_.toUci.uci), variant))
+      .map((sit, moves) => Result(Position(variant, Fen.write(sit)), moves.map(_.toUci.uci)))
       .toList
 
   val nextMove: State[Situation, Option[Move]] = State(sit =>
@@ -29,6 +26,9 @@ object PositionGenerator:
   def gen(moves: Int): State[Situation, List[Move]] =
     if moves == 0 then State.pure(Nil)
     else nextMove.flatMap(move => gen(moves - 1).map(moves => move.toList ++ moves))
+
+  case class Result(position: Position, moves: List[String]):
+    override def toString(): String = s"$position;${moves.mkString(" ")}"
 
   extension (s: Situation)
     def next: Option[MoveOrDrop] =

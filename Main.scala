@@ -2,10 +2,15 @@ import cats.syntax.all.*
 import cats.effect.*
 import com.monovore.decline.*
 import com.monovore.decline.effect.*
+import fs2.*
+import fs2.io.file.Files
+import fs2.data.csv.*
 
 import chess.variant.*
 
 import CLI.Args
+import Domain.Position
+import PositionGenerator.generate
 
 object Main
     extends CommandIOApp(
@@ -22,12 +27,18 @@ object Main
       case Args.Gen(variant, moves, positions) => gen(variant, moves, positions)
       case Args.Perft(file, depth)             => ???
 
-  private def gen(variant: Option[Variant], moves: Int, positions: Int): IO[Unit] =
-    variant match
-      case None    => allVariants.traverse_(genPosition(_, moves, positions))
-      case Some(v) => genPosition(v, moves, positions)
+  private def gen(variant: Option[Variant], moves: Int, total: Int): IO[Unit] =
+    val positions = variant match
+      case None    => Domain.supportedVariants.flatMap(generate(_, moves, total))
+      case Some(v) => generate(v, moves, total)
+    write(positions.map(_.position))
 
-  private def genPosition(variant: Variant, moves: Int, positions: Int): IO[Unit] =
-    IO.println(PositionGenerator.generate(variant, moves, positions).mkString("\n"))
-
-  private val allVariants = List(Crazyhouse, Atomic, Horde, RacingKings, Antichess, ThreeCheck, KingOfTheHill)
+  private def write(positions: List[Position]): IO[Unit] =
+    Stream
+      .emits(positions)
+      .map(_.csv)
+      .intersperse("\n")
+      .through(text.utf8Encode)
+      .through(Files[IO].writeAll(io.file.Path("positions.csv")))
+      .compile
+      .drain

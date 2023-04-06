@@ -1,4 +1,4 @@
-# readme
+# Chess Position generator
 
 ## First task
 
