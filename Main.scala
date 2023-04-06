@@ -24,21 +24,21 @@ object Main
 
   private def execute(args: Args): IO[Unit] =
     args match
-      case Args.Gen(variant, moves, positions) => gen(variant, moves, positions)
-      case Args.Perft(file, depth)             => ???
+      case Args.Gen(variant, moves, positions, output) => gen(variant, moves, positions, output)
+      case Args.Perft(file, depth)                     => ???
 
-  private def gen(variant: Option[Variant], moves: Int, total: Int): IO[Unit] =
+  private def gen(variant: Option[Variant], moves: Int, total: Int, output: String): IO[Unit] =
     val positions = variant match
       case None    => Domain.supportedVariants.flatMap(generate(_, moves, total))
       case Some(v) => generate(v, moves, total)
-    write(positions.map(_.position))
+    write(positions.map(_.position), output)
 
-  private def write(positions: List[Position]): IO[Unit] =
+  private def write(positions: List[Position], output: String): IO[Unit] =
     Stream
       .emits(positions)
       .map(_.csv)
       .intersperse("\n")
-      .through(text.utf8Encode)
-      .through(Files[IO].writeAll(io.file.Path("positions.csv")))
+      .through(text.utf8.encode)
+      .through(Files[IO].writeAll(io.file.Path(output)))
       .compile
       .drain

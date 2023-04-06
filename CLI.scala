@@ -7,7 +7,7 @@ import chess.variant.*
 object CLI:
 
   enum Args:
-    case Gen(variant: Option[Variant], moves: Int, positions: Int)
+    case Gen(variant: Option[Variant], moves: Int, positions: Int, output: String)
     case Perft(file: String, depth: Int)
 
   private val variantOpt: Opts[Option[Variant]] = Opts
@@ -23,7 +23,15 @@ object CLI:
     .option[Int]("positions", "Number of positions to generate", "p")
     .withDefault(10)
 
-  val genOpts = (variantOpt, movesOpt, positionsOpt).mapN(Args.Gen.apply)
+  private val outputOpt = Opts
+    .option[String]("output", "Output file", "o")
+    .withDefault("positions.csv")
+
+  private val inputOpt = Opts
+    .option[String]("input", "Input file", "o")
+    .withDefault("positions.csv")
+
+  val genOpts = (variantOpt, movesOpt, positionsOpt, outputOpt).mapN(Args.Gen.apply)
 
   val parse: Opts[Args] = Opts.subcommand(
     "gen",
