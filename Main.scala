@@ -37,7 +37,7 @@ object Main
       .write(output)
 
   private def perft(depth: Int, outputDir: String): IO[Unit] =
-    Files[IO].createDirectory(io.file.Path(outputDir)) *>
+    Files[IO].createDirectory(io.file.Path(outputDir)).void.handleError(_ => ()) *>
       Domain.supportedVariants.traverse_(perft(_, depth, outputDir))
 
   private def perft(variant: Variant, depth: Int, outputDir: String): IO[Unit] =
