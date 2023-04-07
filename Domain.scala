@@ -52,7 +52,7 @@ object Domain:
   val configs = List(
     // PositionGenConfig(9, 10),
     // PositionGenConfig(16, 10),
-    PositionGenConfig(69, 100),
+    PositionGenConfig(69, 100)
   )
 
   def parse(file: String): Stream[IO, PositionGenConfig] =

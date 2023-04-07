@@ -37,10 +37,12 @@ object PositionGenerator:
         yield gen
 
     def next: Option[MoveOrDrop] =
-      val legalMoves =
-        if game.board.variant.crazyhouse then Crazyhouse.legalMoves(game.situation)
-        else game.situation.legalMoves
-      if legalMoves.isEmpty then None
+      if game.situation.end then None
       else
-        val rnd = scala.util.Random.nextInt(legalMoves.size)
-        Some(legalMoves(rnd))
+        val legalMoves =
+          if game.board.variant.crazyhouse then Crazyhouse.legalMoves(game.situation)
+          else game.situation.legalMoves
+        if legalMoves.isEmpty then None
+        else
+          val rnd = scala.util.Random.nextInt(legalMoves.size)
+          Some(legalMoves(rnd))

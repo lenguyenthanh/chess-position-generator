@@ -17,12 +17,8 @@ object PerftGenerator:
     }
 
     (1 to depth).toList
-      .traverse(depth =>
-        situation
-          .perft(depth)
-          .map(TestCase(depth, _))
-      )
-      .map(cases => Perft(id, position.epd, cases))
+      .traverse(situation.perft(_).map(TestCase(depth, _)))
+      .map(Perft(id, position.epd, _))
 
   extension (s: Situation)
 
