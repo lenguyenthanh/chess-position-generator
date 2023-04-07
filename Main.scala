@@ -25,7 +25,7 @@ object Main
   private def execute(args: Args): IO[Unit] =
     args match
       case Args.Gen(variant, config, output) => gen(variant, config, output)
-      case Args.Perft(depth, output)         => perft(depth, output)
+      case Args.Perft(depth, output, config) => perft(depth, output, config)
 
   private def gen(variant: Option[Variant], config: PositionGenConfig, output: String): IO[Unit] =
     val positions = variant match
@@ -36,18 +36,22 @@ object Main
       .map(_.position.csv)
       .write(output)
 
-  private def perft(depth: Int, outputDir: String): IO[Unit] =
+  private def perft(depth: Int, outputDir: String, config: Option[String]): IO[Unit] =
     Files[IO].createDirectory(io.file.Path(outputDir)).void.handleError(_ => ()) *>
-      Domain.supportedVariants.traverse_(perft(_, depth, outputDir))
+      Domain.supportedVariants.traverse_(perft(_, depth, outputDir, config))
 
-  private def perft(variant: Variant, depth: Int, outputDir: String): IO[Unit] =
-    Stream
-      .emits(Domain.configs)
+  private def perft(variant: Variant, depth: Int, outputDir: String, config: Option[String]): IO[Unit] =
+    getConfig(config)
       .flatMap(perft(variant, depth, _))
       .zipWithIndex
       .evalMap((position, id) => PerftGenerator.gen(position, depth, id.toString))
       .map(_.toPerftString)
       .write(s"$outputDir/${variant.key}.perft")
+
+  private def getConfig(config: Option[String]): Stream[IO, PositionGenConfig] =
+    config match
+      case None       => Stream.emits(Domain.configs)
+      case Some(file) => Domain.parse(file)
 
   private def perft(variant: Variant, depth: Int, config: PositionGenConfig): Stream[IO, Position] =
     Stream
