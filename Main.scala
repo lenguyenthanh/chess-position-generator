@@ -24,21 +24,26 @@ object Main
 
   private def execute(args: Args): IO[Unit] =
     args match
-      case Args.Gen(variant, config, output) => gen(variant, config, output)
-      case Args.Perft(depth, output, config) => perft(depth, output, config)
+      case Args.Gen(variant, config, output)          => gen(variant, config, output)
+      case Args.Perft(variant, depth, output, config) => perft(variant, depth, output, config)
 
   private def gen(variant: Option[Variant], config: PositionGenConfig, output: String): IO[Unit] =
-    val positions = variant match
-      case None    => Domain.supportedVariants.flatMap(generate(_, config))
-      case Some(v) => generate(v, config)
+    val vs = variant.fold(Domain.supportedVariants)(List(_))
     Stream
-      .emits(positions)
+      .emits(vs)
+      .flatMap(v => Stream.emits(generate(v, config)))
       .map(_.position.csv)
       .write(output)
 
-  private def perft(depth: Int, outputDir: String, config: Option[String]): IO[Unit] =
+  private def perft(
+      variant: Option[Variant],
+      depth: Int,
+      outputDir: String,
+      config: Option[String]
+  ): IO[Unit] =
+    val vs = variant.fold(Domain.supportedVariants)(List(_))
     Files[IO].createDirectory(io.file.Path(outputDir)).void.handleError(_ => ()) *>
-      Domain.supportedVariants.traverse_(perft(_, depth, outputDir, config))
+      vs.traverse_(perft(_, depth, outputDir, config))
 
   private def perft(variant: Variant, depth: Int, outputDir: String, config: Option[String]): IO[Unit] =
     getConfig(config)

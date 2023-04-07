@@ -10,7 +10,7 @@ object CLI:
 
   enum Args:
     case Gen(variant: Option[Variant], config: PositionGenConfig, output: String)
-    case Perft(depth: Int, output: String, config: Option[String])
+    case Perft(variant: Option[Variant], depth: Int, output: String, config: Option[String])
 
   private val variantOpt: Opts[Option[Variant]] = Opts
     .option[String]("variant", "Variant to generate positions for", "v")
@@ -43,16 +43,14 @@ object CLI:
     .option[String]("config", "Config file", "o")
     .orNone
 
-  val genOpts = (variantOpt, configOpt, outputOpt).mapN(Args.Gen.apply)
-
   val genOpt: Opts[Args] = Opts.subcommand(
     "gen",
     help = "Generate positions for a given variant(s)"
-  ) { genOpts }
+  ) { (variantOpt, configOpt, outputOpt).mapN(Args.Gen.apply) }
 
   val perftOpt = Opts.subcommand(
     "perft",
     help = "Generate perft for all variants follows a fixed config"
-  ) { (depthOpt, outputDirOpt, configFileOpt).mapN(Args.Perft.apply) }
+  ) { (variantOpt, depthOpt, outputDirOpt, configFileOpt).mapN(Args.Perft.apply) }
 
   val parse: Opts[Args] = genOpt <+> perftOpt
