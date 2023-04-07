@@ -50,16 +50,9 @@ object Domain:
   given RowDecoder[PositionGenConfig] = deriveRowDecoder
 
   val configs = List(
-    PositionGenConfig(9, 10),
-    PositionGenConfig(16, 10),
-    PositionGenConfig(20, 10),
-    PositionGenConfig(25, 10),
-    PositionGenConfig(31, 10),
-    PositionGenConfig(36, 10),
-    PositionGenConfig(42, 10),
-    PositionGenConfig(53, 10),
-    PositionGenConfig(58, 10),
-    PositionGenConfig(67, 10)
+    // PositionGenConfig(9, 10),
+    // PositionGenConfig(16, 10),
+    PositionGenConfig(69, 100),
   )
 
   def parse(file: String): Stream[IO, PositionGenConfig] =
