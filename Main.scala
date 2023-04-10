@@ -24,8 +24,8 @@ object Main
 
   private def execute(args: Args): IO[Unit] =
     args match
-      case Args.Gen(variant, config, output)          => gen(variant, config, output)
-      case Args.Perft(variant, depth, output, config) => perft(variant, depth, output, config)
+      case Args.Gen(variant, config, output)           => gen(variant, config, output)
+      case Args.Perft(variants, depth, output, config) => perft(variants, depth, output, config)
 
   private def gen(variant: Option[Variant], config: PositionGenConfig, output: String): IO[Unit] =
     val vs = variant.fold(Domain.supportedVariants)(List(_))
@@ -36,12 +36,12 @@ object Main
       .write(output)
 
   private def perft(
-      variant: Option[Variant],
+      variants: List[Variant],
       depth: Int,
       outputDir: String,
       config: Option[String]
   ): IO[Unit] =
-    val vs = variant.fold(Domain.supportedVariants)(List(_))
+    val vs = if variants.isEmpty then Domain.supportedVariants else variants
     Files[IO].createDirectory(io.file.Path(outputDir)).void.handleError(_ => ()) *>
       vs.traverse_(perft(_, depth, outputDir, config))
 

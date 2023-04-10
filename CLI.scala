@@ -10,12 +10,20 @@ object CLI:
 
   enum Args:
     case Gen(variant: Option[Variant], config: PositionGenConfig, output: String)
-    case Perft(variant: Option[Variant], depth: Int, output: String, config: Option[String])
+    case Perft(variants: List[Variant], depth: Int, output: String, config: Option[String])
+
+  given Argument[Variant] with
+    def read(string: String): ValidatedNel[String, Variant] =
+      Domain.validate(string).toValidatedNel
+
+    def defaultMetavar: String = "variant"
 
   private val variantOpt: Opts[Option[Variant]] = Opts
-    .option[String]("variant", "Variant to generate positions for", "v")
-    .mapValidated(Domain.validate(_).toValidatedNel)
+    .option[Variant]("variant", "Variant to generate positions for", "v")
     .orNone
+
+  private val variantsOpt: Opts[List[Variant]] = Opts
+    .options[Variant]("variants", "Variants to generate perfts, empty means all", "v").orEmpty
 
   private val movesOpt = Opts
     .option[Int]("moves", "Number of moves to generate", "m")
@@ -51,6 +59,6 @@ object CLI:
   val perftOpt = Opts.subcommand(
     "perft",
     help = "Generate perft for all variants follows a fixed config"
-  ) { (variantOpt, depthOpt, outputDirOpt, configFileOpt).mapN(Args.Perft.apply) }
+  ) { (variantsOpt, depthOpt, outputDirOpt, configFileOpt).mapN(Args.Perft.apply) }
 
   val parse: Opts[Args] = genOpt <+> perftOpt
