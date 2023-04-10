@@ -12,7 +12,7 @@ object PositionGenerator:
   def generate(variant: Variant, config: PositionGenConfig): List[Result] =
     val game = Game(Situation(variant))
     (1 to config.positions)
-      .flatMap(_ => game.gen(config.moves, Some(10)))
+      .flatMap(_ => game.gen(config.moves, Some(1000)))
       .map(game => Result(Position(variant, Fen.write(game)), game.sans.toList))
       .toList
 

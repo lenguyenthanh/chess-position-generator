@@ -23,7 +23,8 @@ object CLI:
     .orNone
 
   private val variantsOpt: Opts[List[Variant]] = Opts
-    .options[Variant]("variants", "Variants to generate perfts, empty means all", "v").orEmpty
+    .options[Variant]("variants", "Variants to generate perfts, empty means all", "v")
+    .orEmpty
 
   private val movesOpt = Opts
     .option[Int]("moves", "Number of moves to generate", "m")
